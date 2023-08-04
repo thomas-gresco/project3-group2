@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formula 1 Circuits Map</title>
+    <!-- Include Leaflet CSS and JS files -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <style>
+        /* Set the height of the map container to 100vh */
+        #map {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Initialize the map with a default tile layer (e.g., OpenStreetMap)
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
+
+        var cartoLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png');
+
+        var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+
+        var map = L.map('map', {
+            layers: [osmLayer] // Set the default base layer
+        }).setView([0, 0], 2);
+
+        var baseLayers = {
+            'OpenStreetMap': osmLayer,
+            'Carto Light': cartoLayer,
+            'Satellite Imagery': satelliteLayer
+        };
+
+        L.control.layers(baseLayers).addTo(map);
+
+        // Function to add markers with pop-ups to the map
+        function addMarkersToMap(circuits) {
+            circuits.forEach(function(circuit) {
+                var marker = L.marker([circuit.lat, circuit.lng]).addTo(map);
+                marker.bindPopup(circuit.name);
+            });
+        }
+
+        // Function to change the map background
+        function changeMapBackground(background) {
+            var selectedLayer = baseLayers[background];
+            if (selectedLayer) {
+                map.removeLayer(osmLayer);
+                map.removeLayer(cartoLayer);
+                map.removeLayer(satelliteLayer);
+                map.addLayer(selectedLayer);
+            }
+        }
+
+        // Fetch circuit data from Flask API and add markers to the map
+        fetch('/circuits')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(circuits) {
+                addMarkersToMap(circuits);
+            })
+            .catch(function(error) {
+                console.error('Error fetching circuit data:', error);
+            });
+    </script>
+
+    <div>
+        <!-- Dropdown to choose the map background -->
+        <label for="map-background">Choose Map Background:</label>
+        <select id="map-background" onchange="changeMapBackground(this.value)">
+            <option value="osm">OpenStreetMap</option>
+            <option value="carto">Carto Light</option>
+            <option value="satellite">Satellite Imagery</option>
+        </select>
+    </div>
+</body>
+</html>
+
+
+
+

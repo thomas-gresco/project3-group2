@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
 import sqlite3
 
 app = Flask(__name__)
@@ -83,6 +83,11 @@ def get_team_standings(race_id):
     columns = ('teamStandingsId', 'raceId', 'teamId', 'points', 'position')
     team_standings_data = [dict(zip(columns, standing)) for standing in team_standings]
     return jsonify(team_standings_data)
+
+# Route to serve the map template
+@app.route('/map', methods=['GET'])
+def show_map():
+    return render_template('map.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
