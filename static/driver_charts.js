@@ -133,7 +133,7 @@ function formatTime(timeInSeconds) {
             labels: raceRounds,
             datasets: [
               {
-                label: 'Driver Standings',
+                label: 'Driver Points',
                 data: points,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -149,7 +149,7 @@ function formatTime(timeInSeconds) {
               },
               title: {
                 display: true,
-                text: 'Driver Standings Over Time',
+                text: 'Driver Points per Race',
               },
               tooltip: {
                 enabled: true,
