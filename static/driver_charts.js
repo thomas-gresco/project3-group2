@@ -3,6 +3,11 @@ const chartJsScript = document.createElement('script');
 chartJsScript.src = 'https://cdn.jsdelivr.net/npm/chart.js';
 document.head.appendChild(chartJsScript);
 
+// Add the Chart.js Zoom plugin script
+const chartJsZoomPluginScript = document.createElement('script');
+chartJsZoomPluginScript.src = 'https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom';
+document.head.appendChild(chartJsZoomPluginScript);
+
 let lapTimesChart = null; // Variable to store the Chart instance
 let driverStandingsChart = null; // Variable to store the Chart instance for driver standings
 
@@ -112,81 +117,73 @@ function formatTime(timeInSeconds) {
   function fetchDriverStandingsOverTime() {
     const driverSelect = document.getElementById('driverSelect');
     const driverId = driverSelect.value;
-  
+
     fetch(`/driver_standings_over_time/${driverId}`)
-      .then(response => response.json())
-      .then(data => {
-        // Process the data received from the server (Flask/SQLite)
-        const raceRounds = data.map(item => item.raceId);
-        const points = data.map(item => item.points);
-  
-        // Destroy the previous chart instance if it exists
-        if (driverStandingsChart) {
-          driverStandingsChart.destroy();
-        }
-  
-        // Create a new line chart using Chart.js
-        const canvasElement = document.getElementById('driverStandingsChart');
-        driverStandingsChart = new Chart(canvasElement, {
-          type: 'line',
-          data: {
-            labels: raceRounds,
-            datasets: [
-              {
-                label: 'Driver Points',
-                data: points,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderWidth: 2,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                display: false,
-              },
-              title: {
-                display: true,
-                text: 'Driver Points per Race',
-              },
-              tooltip: {
-                enabled: true,
-                callbacks: {
-                  label: function (context) {
-                    if (context.parsed && context.parsed.y !== null) {
-                      const lapTimeInSeconds = context.parsed.y; // Use parsed value directly
-                      const raceId = context.dataset.labels[context.dataIndex];
-                      return `Race Id: ${raceId}, Points: ${lapTimeInSeconds}`;
-                    }
-                    return '';
-                  },
+        .then(response => response.json())
+        .then(data => {
+            // Process the data received from the server (Flask/SQLite)
+            const driverStandings = data;
+            const raceIdsData = driverStandings.map(item => item.raceId);
+            const pointsData = driverStandings.map(item => item.points);
+
+            // Destroy the previous chart instance if it exists
+            if (driverStandingsChart) {
+                driverStandingsChart.destroy();
+            }
+
+            // Create a new line chart using Chart.js with zooming enabled
+            const canvasElement = document.getElementById('driverStandingsChart');
+            driverStandingsChart = new Chart(canvasElement, {
+                type: 'line',
+                data: {
+                    labels: raceIdsData,
+                    datasets: [{
+                        label: 'Driver Points',
+                        data: pointsData,
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                    }],
                 },
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Points',
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Driver Points',
+                            },
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Race ID',
+                            },
+                        },
+                    },
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Driver Points Per Race',
+                        },
+                        zoom: {
+                            zoom: {
+                                enabled: true,
+                                mode: 'xy', // Enable zooming in both x and y directions
+                            },
+                        },
+                    },
                 },
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Race Id',
-                },
-              },
-            },
-          },
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
         });
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }
+}
   
   // Function to fetch driver names and populate the dropdown on page load
   function fetchDriverNames() {
