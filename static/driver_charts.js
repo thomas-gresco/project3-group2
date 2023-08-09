@@ -168,7 +168,7 @@ function formatTime(timeInSeconds) {
                         },
                         title: {
                             display: true,
-                            text: 'Driver Points Per Race',
+                            text: 'Driver Points Over Time',
                         },
                         zoom: {
                             zoom: {
