@@ -35,7 +35,7 @@
     </div>
 
     <div id="map"></div>
-    
+        
     <script>
         var map;
         var circuitMarkers = [];
@@ -127,6 +127,11 @@
                     });
             }
         }
+        
+        //adding an image
+        var imageUrl = '/static/images/image.png';
+        var imageBounds = [[-60, -60], [-40, 20]];
+        var imageOverlay = L.imageOverlay(imageUrl, imageBounds).addTo(map);
     </script>
 
     <div>
