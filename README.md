@@ -59,7 +59,7 @@ The app offers two interactive charts to visualize Formula 1 data:
 
 ## Map of Circuits
 
-The app provides an interactive map displaying the locations of Formula 1 circuits worldwide. Users can choose from different map backgrounds, including OpenStreetMap, Carto Light, and Satellite Imagery.
+The app provides an interactive map displaying the locations of Formula 1 circuits worldwide. Users can choose from different map backgrounds, including OpenStreetMap, Carto Light, and Satellite Imagery as well as choose the year.
 
 ## Technologies Used
 
@@ -75,4 +75,7 @@ The app provides an interactive map displaying the locations of Formula 1 circui
 Contributions to this project are welcome! If you find any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
 
 ## License
+The original csv files came from: 
+https://www.kaggle.com/datasets/rohanrao/formula-1-world-championship-1950-2020?select=sprint_results.csv
+
 

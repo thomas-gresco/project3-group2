@@ -13,99 +13,100 @@ function formatTime(timeInSeconds) {
     return `${minutes}:${secondsWithMilliseconds}`;
   }
   
+  // Function to fetch and display fastest lap times for the selected driver
   function fetchFastestLapTimes() {
     const driverSelect = document.getElementById('driverSelect');
     const driverId = driverSelect.value;
-
+  
     fetch(`/fastest_lap_times/${driverId}`)
-        .then(response => response.json())
-        .then(data => {
-            // Process the data received from the server (Flask/SQLite)
-            const lapTimes = data;
-            const lapTimesData = lapTimes.map(item => {
-                // Convert the lap time in "m:ss.SSS" format to seconds for Chart.js
-                const lapTimeParts = item.fastestLapTime.split(':');
-                const minutesInSeconds = parseInt(lapTimeParts[0]) * 60;
-                const secondsWithMilliseconds = parseFloat(lapTimeParts[1]);
-                return minutesInSeconds + secondsWithMilliseconds;
-            });
-            const raceIdsData = lapTimes.map(item => item.raceId);
-
-            // Destroy the previous chart instance if it exists
-            if (lapTimesChart) {
-                lapTimesChart.destroy();
-            }
-
-            // Create a new horizontal bar chart using Chart.js
-            const canvasElement = document.getElementById('lapTimesChart');
-            lapTimesChart = new Chart(canvasElement, {
-                type: 'bar',
-                data: {
-                    labels: raceIdsData, // Assign race IDs to y-axis labels
-                    datasets: [
-                        {
-                            label: 'Fastest Lap Times',
-                            data: lapTimesData,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                        },
-                    ],
-                },
-                options: {
-                    indexAxis: 'y',
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Race ID',
-                            },
-                        },
-                        x: {
-                            beginAtZero: false,
-                            title: {
-                                display: true,
-                                text: 'Fastest Lap Time',
-                            },
-                            ticks: {
-                                stepSize: 5,
-                                callback: function (value) {
-                                    const minutes = Math.floor(value / 60);
-                                    const secondsWithMilliseconds = (value % 60).toFixed(3).padStart(6, '0');
-                                    return `${minutes}:${secondsWithMilliseconds}`;
-                                },
-                            },
-                        },
-                    },
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: true,
-                        },
-                        title: {
-                            display: true,
-                            text: 'Fastest Lap Times',
-                        },
-                        tooltip: {
-                            enabled: true,
-                            callbacks: {
-                                label: function (context) {
-                                    const raceId = context.parsed.y; // Race ID is on the y-axis
-                                    const lapTimeInSeconds = context.parsed.x; // Lap time is on the x-axis
-                                    return `Race ID: ${raceId}, Lap Time: ${formatTime(lapTimeInSeconds)}`;
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
+      .then(response => response.json())
+      .then(data => {
+        // Process the data received from the server (Flask/SQLite)
+        const lapTimes = data;
+        const lapTimesData = lapTimes.map(item => {
+          // Convert the lap time in "m:ss.SSS" format to seconds for Chart.js
+          const lapTimeParts = item.fastestLapTime.split(':');
+          const minutesInSeconds = parseInt(lapTimeParts[0]) * 60;
+          const secondsWithMilliseconds = parseFloat(lapTimeParts[1]);
+          return minutesInSeconds + secondsWithMilliseconds;
         });
-}
-
+        const raceIdsData = lapTimes.map(item => item.raceId);
+  
+        // Destroy the previous chart instance if it exists
+        if (lapTimesChart) {
+          lapTimesChart.destroy();
+        }
+  
+        // Create a new horizontal bar chart using Chart.js
+        const canvasElement = document.getElementById('lapTimesChart');
+        lapTimesChart = new Chart(canvasElement, {
+          type: 'bar',
+          data: {
+            labels: raceIdsData,
+            datasets: [
+              {
+                label: 'Fastest Lap Times',
+                data: lapTimesData,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            indexAxis: 'y',
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Race ID',
+                },
+              },
+              x: {
+                beginAtZero: false, // Start the scale from the lowest value in the data
+                title: {
+                  display: true,
+                  text: 'Fastest Lap Time',
+                },
+                ticks: {
+                  // To set custom step size and maximum value for x-axis
+                  stepSize: 5, // Customize the step size based on your data
+                  callback: function (value) {
+                    const minutes = Math.floor(value / 60);
+                    const secondsWithMilliseconds = (value % 60).toFixed(3).padStart(6, '0');
+                    return `${minutes}:${secondsWithMilliseconds}`;
+                  },
+                },
+              },
+            },
+            responsive: true,
+            plugins: {
+              legend: {
+                display: true, 
+              },
+              title: {
+                display: true,
+                text: 'Fastest Lap Times',
+              },
+              tooltip: {
+                enabled: true,
+                callbacks: {
+                  label: function (context) {
+                    const lapTimeInSeconds = context.parsed.y; // Use parsed value directly
+                    const raceId = context.dataset.labels[context.dataIndex];
+                    return `Race ID: ${raceId}, Lap Time: ${formatTime(lapTimeInSeconds)}`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }
   
   // Function to fetch and display driver standings over time for the selected driver
   function fetchDriverStandingsOverTime() {
@@ -132,7 +133,7 @@ function formatTime(timeInSeconds) {
             labels: raceRounds,
             datasets: [
               {
-                label: 'Driver Standings',
+                label: 'Driver Points',
                 data: points,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -148,7 +149,7 @@ function formatTime(timeInSeconds) {
               },
               title: {
                 display: true,
-                text: 'Driver Standings Over Time',
+                text: 'Driver Points per Race',
               },
               tooltip: {
                 enabled: true,
@@ -210,4 +211,4 @@ function formatTime(timeInSeconds) {
   
   // Event listener for the dropdown selection change
   document.getElementById('driverSelect').addEventListener('change', fetchDriverStandingsOverTime);
-  
+  document.getElementById('driverSelect').addEventListener('change', fetchFastestLapTimes);
