@@ -23,28 +23,38 @@ def execute_query(query, params=None, fetchone=False):
 @app.route('/', methods=['GET'])
 def welcome():
     return (
-        f"Welcome to the Formula 1 Racing App API!<br/>"
-        f"Available Routes:<br/>"
-        f"/api/v1.0/drivers<br/>"
-        f"- List of all the drivers in Formula 1<br/>"
-        f"/api/v1.0/teams<br/>"
-        f"- List of all the teams in Formula 1<br/>"
-        f"/api/v1.0/races<br/>"
-        f"- List of all the races in Formula 1<br/>"
-        f"/api/v1.0/circuits<br/>"
-        f"- List of all the circuits in Formula 1<br/>"
-        f"/api/v1.0/driver_standings/<int:race_id><br/>"
-        f"- List of the driver standings for a specific race<br/>"
-        f"/api/v1.0/team_standings/<int:race_id><br/>"
-        f"- List of the team standings for a specific race<br/>"
-        f"/api/v1.0/fastest_lap_times<br/>"
-        f"- List of the fastest lap times for each driver<br/>"
-        f"/api/v1.0/driver_standings_over_time<br/>"
-        f"- List of the driver standings over time for a specific driver<br/>"
-        f"/api/v1.0/map<br/>"
-        f"- Map of all the circuits in Formula 1<br/>"
-        f"/api/v1.0/charts<br/>"
-        f"- Charts of statistics for all the drivers in Formula 1<br/>"
+        "<h1>Welcome to the Formula 1 Racing App API!</h1>"
+        "<img src='https://creativereview.imgix.net/content/uploads/2017/11/F1-logo-red-on-black-e1511528736760.png' alt='Formula 1 Logo' style='width: 300px;'>"
+        "<h2>Available Routes:</h2>"
+        "<ul>"
+        "<li><b><a href='/drivers'>/drivers</a></b><br/>"
+        "List of all the drivers in Formula 1</li><br/>"
+        "<li><b><a href='/teams'>/teams</a></b><br/>"
+        "List of all the teams in Formula 1</li><br/>"
+        "<li><b><a href='/races'>/races</a></b><br/>"
+        "List of all the races in Formula 1</li><br/>"
+        "<li><b><a href='/circuits'>/circuits</a></b><br/>"
+        "List of all the circuits in Formula 1</li><br/>"
+        "<li><b><a href='/circuits/&lt;year&gt;'>/circuits/&lt;year&gt;</a></b><br/>"
+        "List of all the circuits in Formula 1 by year</br>"
+        "Replace &lt;year&gt; with the desire year 1950-2022(Integer)</li><br/>"
+        "<li><b><a href='/driver_standings/&lt;race_id&gt;'>/driver_standings/&lt;race_id&gt;</a></b><br/>"
+        "List of the driver standings for a specific race<br/>"
+        "Replace &lt;race_id&gt; with the desired race ID (integer)</li><br/>"
+        "<li><b><a href='/team_standings/&lt;race_id&gt;'>/team_standings/&lt;race_id&gt;</a></b><br/>"
+        "List of the team standings for a specific race<br/>"
+        "Replace &lt;race_id&gt; with the desired race ID (integer)</li><br/>"
+        "<li><b><a href='/fastest_lap_times/&lt;driver_id&gt;'>/fastest_lap_times/&lt;driver_id&gt;</a></b><br/>"
+        "List of the fastest lap times for a specific driver<br/>"
+        "Replace &lt;driver_id&gt; with the desired driver ID (integer)</li><br/>"
+        "<li><b><a href='/driver_standings_over_time/&lt;driver_id&gt;'>/driver_standings_over_time/&lt;driver_id&gt;</a></b><br/>"
+        "List of the driver standings over time for a specific driver<br/>"
+        "Replace &lt;driver_id&gt; with the desired driver ID (integer)</li><br/>"
+        "<li><b><a href='/map'>/map</a></b><br/>"
+        "Map of all the circuits in Formula 1</li><br/>"
+        "<li><b><a href='/charts'>/charts</a></b><br/>"
+        "Charts of statistics for all the drivers in Formula 1</li><br/>"
+        "</ul>"
     )
 
 # Route to get all drivers
@@ -82,6 +92,20 @@ def get_circuits():
     columns = ('circuitId', 'name', 'location', 'country', 'lat', 'lng')
     circuits_data = [dict(zip(columns, circuit)) for circuit in circuits]
     return jsonify(circuits_data)
+
+# Route to get circuits raced in a specific year
+@app.route('/circuits/<int:year>', methods=['GET'])
+def get_circuits_by_year(year):
+    query = 'SELECT c.circuitId, c.name, c.location, c.country, c.lat, c.lng ' \
+            'FROM Circuits c ' \
+            'INNER JOIN Races r ON c.circuitId = r.circuitId ' \
+            'WHERE r.year = ?'
+    params = (year,)
+    circuits = execute_query(query, params)
+    columns = ('circuitId', 'name', 'location', 'country', 'lat', 'lng')
+    circuits_data = [dict(zip(columns, circuit)) for circuit in circuits]
+    return jsonify(circuits_data)
+
 
 # Route for driver standings for a specific race
 @app.route('/driver_standings/<int:race_id>', methods=['GET'])
