@@ -35,6 +35,9 @@ def welcome():
         "List of all the races in Formula 1</li><br/>"
         "<li><b><a href='/circuits'>/circuits</a></b><br/>"
         "List of all the circuits in Formula 1</li><br/>"
+        "<li><b><a href='/circuits/&lt;year&gt;'>/circuits/&lt;year&gt;</a></b><br/>"
+        "List of all the circuits in Formula 1 by year</br>"
+        "Replace &lt;year&gt; with the desire year 1950-2022(Integer)</li><br/>"
         "<li><b><a href='/driver_standings/&lt;race_id&gt;'>/driver_standings/&lt;race_id&gt;</a></b><br/>"
         "List of the driver standings for a specific race<br/>"
         "Replace &lt;race_id&gt; with the desired race ID (integer)</li><br/>"
@@ -89,6 +92,20 @@ def get_circuits():
     columns = ('circuitId', 'name', 'location', 'country', 'lat', 'lng')
     circuits_data = [dict(zip(columns, circuit)) for circuit in circuits]
     return jsonify(circuits_data)
+
+# Route to get circuits raced in a specific year
+@app.route('/circuits/<int:year>', methods=['GET'])
+def get_circuits_by_year(year):
+    query = 'SELECT c.circuitId, c.name, c.location, c.country, c.lat, c.lng ' \
+            'FROM Circuits c ' \
+            'INNER JOIN Races r ON c.circuitId = r.circuitId ' \
+            'WHERE r.year = ?'
+    params = (year,)
+    circuits = execute_query(query, params)
+    columns = ('circuitId', 'name', 'location', 'country', 'lat', 'lng')
+    circuits_data = [dict(zip(columns, circuit)) for circuit in circuits]
+    return jsonify(circuits_data)
+
 
 # Route for driver standings for a specific race
 @app.route('/driver_standings/<int:race_id>', methods=['GET'])

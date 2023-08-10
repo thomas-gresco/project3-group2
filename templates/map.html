@@ -14,10 +14,31 @@
     </style>
 </head>
 <body>
-    <div id="map"></div>
-
+    <div>
+        <!-- Dropdown to choose the year -->
+        <label for="select-year">Select Year:</label>
+        <select id="select-year" onchange="getYearCircuits(this.value)">
+            <!-- Populate options with years from 1950 to 2022 -->
     <script>
-        // Initialize the map with a default tile layer (e.g., OpenStreetMap)
+        var selectYearElement = document.getElementById("select-year");
+        var currentYear = 2022;
+
+        for (var year = currentYear; year >= 1950; year--) {
+            var option = document.createElement("option");
+            option.value = year;
+            option.text = year;
+            selectYearElement.appendChild(option);
+        }
+    </script>
+        </select>
+        <button onclick="showTracksForYear()">Show Tracks</button>
+    </div>
+
+    <div id="map"></div>
+    
+    <script>
+        var map;
+        var circuitMarkers = [];
         var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?lang=en', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         });
@@ -26,9 +47,9 @@
 
         var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
 
-        var map = L.map('map', {
+        map = L.map('map', {
             layers: [osmLayer] // Set the default base layer
-        }).setView([0, 0], 2);
+        }).setView([0, 0], 3);
 
         var baseLayers = {
             'OpenStreetMap': osmLayer,
@@ -42,19 +63,23 @@
         function addMarkersToMap(circuits) {
             circuits.forEach(function(circuit) {
                 var marker = L.marker([circuit.lat, circuit.lng]).addTo(map);
-                marker.bindPopup(circuit.name);
+                
+                // Create the content for the popup
+                var popupContent = '<b>Name:</b> ' + circuit.name + '<br>' +
+                                   '<b>Location:</b> ' + circuit.location + '<br>' +
+                                   '<b>Country:</b> ' + circuit.country;
+                
+                marker.bindPopup(popupContent);
+                circuitMarkers.push(marker);
             });
         }
 
-        // Function to change the map background
-        function changeMapBackground(background) {
-            var selectedLayer = baseLayers[background];
-            if (selectedLayer) {
-                map.removeLayer(osmLayer);
-                map.removeLayer(cartoLayer);
-                map.removeLayer(satelliteLayer);
-                map.addLayer(selectedLayer);
-            }
+        // Function to clear existing markers
+        function clearMarkers() {
+            circuitMarkers.forEach(function(marker) {
+                map.removeLayer(marker);
+            });
+            circuitMarkers = [];
         }
 
         // Fetch circuit data from Flask API and add markers to the map
@@ -68,6 +93,40 @@
             .catch(function(error) {
                 console.error('Error fetching circuit data:', error);
             });
+
+        // Function to change the map background
+        function changeMapBackground(background) {
+            var selectedLayer = baseLayers[background];
+            if (selectedLayer) {
+                map.eachLayer(function(layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
+                    }
+                });
+                selectedLayer.addTo(map);
+            }
+        }
+
+        // Function to fetch and display circuits based on selected year
+        function getYearCircuits(year) {
+            if (year) {
+                // Fetch circuits for the selected year
+                fetch(`/circuits/${year}`)
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(circuits) {
+                        // Clear existing markers
+                        clearMarkers();
+
+                        // Add markers for circuits raced in the selected year
+                        addMarkersToMap(circuits);
+                    })
+                    .catch(function(error) {
+                        console.error('Error fetching circuit data:', error);
+                    });
+            }
+        }
     </script>
 
     <div>
@@ -81,6 +140,7 @@
     </div>
 </body>
 </html>
+
 
 
 
