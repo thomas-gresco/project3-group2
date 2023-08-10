@@ -35,7 +35,7 @@
     </div>
 
     <div id="map"></div>
-    
+        
     <script>
         var map;
         var circuitMarkers = [];
@@ -127,6 +127,11 @@
                     });
             }
         }
+        
+        //adding an image
+        var imageUrl = "https://cdn.shopify.com/s/files/1/1095/6418/products/F1-logo.png?v=1574506191";
+        var imageBounds = [[-60, -60], [-40, 20]];
+        var imageOverlay = L.imageOverlay(imageUrl, imageBounds).addTo(map);
     </script>
 
     <div>
@@ -140,8 +145,6 @@
     </div>
 </body>
 </html>
-
-
 
 
 
